@@ -57,6 +57,7 @@ userSchema.pre("save",async function (next){
         return next()
     }
     this.password = bcrypt.hash(this.password,10)
+    next();
 })
 
 userSchema.methods.generateAccessToken = function(){
@@ -73,7 +74,7 @@ userSchema.methods.generateAccessToken = function(){
 )
 }
 
-userSchema.methods.generateAccessToken = function(){
+userSchema.methods.generateRefreshToken = function(){
     return jwt.sign({
         _id: this._id,
         email: this.email,
