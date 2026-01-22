@@ -223,4 +223,101 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
 
 
 })
-export {loginUser,registerUser,logoutUser,refreshAccessToken}
+
+const getCurrentUser = asyncHandler(async (req,res)=>{
+    res.status(200).json( new ApiResponse(
+        200,
+        req.user,
+        "Current user fetched successfully!"
+    ))
+})
+
+const updateAccountDetails = asyncHandler(async (req,res)=>{
+    const {username, email} = req.body;
+    if(!username || !email)
+    {
+        throw new ApiError(400,"All fields are required for updation!")
+    }
+
+    const user = await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set: {
+                username: username,
+                email: email
+            }
+        }
+        ,{new: true}
+    ).select("-password")
+
+    res.status(200)
+    .json(new ApiResponse(
+        200,
+        user,
+        "Details updated successfully!"
+    ))
+})
+
+const changeCurrentPassword = asyncHandler(async (req,res)=>{
+    const {oldPassword,newPassword} = req.body;
+    const user = await User.findById(req.user?._id)
+    const isPassCorrect = await user.isPasswordCorrect(oldPassword)
+
+    if(!isPassCorrect)
+    {
+        throw new ApiError(401,"Invalid current password!")
+    }
+
+    user.password = newPassword;
+    await user.save({validateBeforeSave: false})// NOTE: the presave hook will run before saving, and bcrypt will hash the password
+    
+    return res.status(200)
+    .json( new ApiResponse(
+        200,
+        {},
+        "Password changed successfully!"
+    ))
+})
+
+const updateUserAvatar = asyncHandler(async (req,res)=>{
+    const avatarLocalPath= req.file?.path
+
+    if(!avatarLocalPath)
+    {
+        throw new ApiError(400, "Avatar file is missing!")
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+    if(!avatar.url)
+    {
+        throw new ApiError(400, "Avatar while uploading on avatar!")
+    }
+
+    const user = await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        {new: true}
+    ).select("-password")
+
+    res.status(200).json(
+        new ApiResponse(
+            200,
+            user,
+            "Avatar updated successfully!"
+        )
+    )
+})
+
+
+export {
+    loginUser,
+    registerUser,
+    logoutUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvatar
+}
