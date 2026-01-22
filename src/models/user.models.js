@@ -54,10 +54,10 @@ const userSchema = new Schema({
 // before saving any information about user, do the hashing of password
 userSchema.pre("save",async function (next){ 
     if(!this.isModified("password")){
-        return next()
+        return;
     }
     this.password = await bcrypt.hash(this.password,10)
-    next();
+    
 })
 
 userSchema.methods.generateAccessToken = function(){
