@@ -20,10 +20,16 @@ app.use(cookieParser())
 
 //routes import
 import userRouter from "./routes/user.routes.js"
+import tweetRouter from "./routes/tweet.routes.js";
+import likeRouter from "./routes/like.routes.js";
+import videoRouter from "./routes/video.routes.js";
 
 //routes declaration 
 app.use("/api/v1/users",userRouter) 
 // whatever we write in app.use , it gets prefixed in the path : localhost:8000/api/v1/users
+app.use("/api/v1/tweets", tweetRouter)
+app.use("/api/v1/likes",likeRouter)
 
+app.use("/api/v1/videos", videoRouter);
 
 export default app;

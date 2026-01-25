@@ -9,4 +9,22 @@ const storage = multer.diskStorage({
   }
 })
 
-export const upload = multer({ storage: storage })
+const uploadImage = multer({ storage: storage })
+
+const uploadVideo = multer({
+    storage,
+    limits: {
+        fileSize: 200 * 1024 * 1024 // 200MB
+    },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith("video/") || file.mimetype.startsWith("image/")) {
+            cb(null, true);
+        } else {
+            cb(new ApiError(400, "Only video & image files are allowed"), false);
+        }
+    }
+});
+
+export {uploadImage, uploadVideo}
+
+
